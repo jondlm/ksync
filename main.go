@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/jawher/mow.cli"
+	"github.com/jondlm/lazywatch/util"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,52 +16,10 @@ import (
 var version string
 var log *logrus.Logger
 
-func debounce(interval time.Duration, f func()) func() {
-	var timer *time.Timer
-
-	return func() {
-		if timer == nil {
-			timer = time.NewTimer(interval)
-
-			go func() {
-				<-timer.C
-				timer.Stop()
-				timer = nil
-				f()
-			}()
-		} else {
-			timer.Reset(interval)
-		}
-	}
-}
-
-func watch(dir string, watcher *fsnotify.Watcher) {
-	log.WithFields(logrus.Fields{"dir": dir}).Debug("walking directory")
-	watcher.Add(dir)
-
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		log.WithFields(logrus.Fields{"dir": dir}).Debug("adding watch")
-		if err != nil {
-			log.Errorf("failure to access %q: %v\n", dir, err)
-			return err
-		}
-
-		if info.IsDir() && path != dir {
-			watch(path, watcher)
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		log.Errorf("error walking the path %q: %v\n", dir, err)
-	}
-}
-
 func main() {
 	app := cli.App("lazywatch", "Debounced directory watch")
 
-	app.Spec = "[-v] DIR CMD [ARG...]"
+	app.Spec = "[-v] DIR -- CMD [ARG...]"
 	app.Version("version", version)
 
 	var (
@@ -90,10 +48,10 @@ func main() {
 		}
 		defer watcher.Close()
 
-		watch(*dir, watcher)
+		util.Watch(*dir, watcher, log)
 
 		running := false
-		update := debounce(time.Second, func() {
+		update := util.Debounce(time.Second, func() {
 			if running {
 				return
 			}
@@ -132,7 +90,7 @@ func main() {
 						fi, _ := os.Stat(event.Name)
 
 						if fi.IsDir() {
-							watch(event.Name, watcher)
+							util.Watch(event.Name, watcher, log)
 						}
 					}
 				case err := <-watcher.Errors:
