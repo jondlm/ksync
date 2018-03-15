@@ -126,6 +126,7 @@ func main() {
 			for {
 				select {
 				case event := <-watcher.Events:
+					log.WithFields(logrus.Fields{"type": event.Op, "eventDir": event.Name}).Debug("event seen")
 					update()
 					if event.Op&fsnotify.Create == fsnotify.Create {
 						fi, _ := os.Stat(event.Name)
