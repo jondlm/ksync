@@ -8,6 +8,12 @@
   version = "v1.4.7"
 
 [[projects]]
+  name = "github.com/jawher/mow.cli"
+  packages = ["."]
+  revision = "0e80ee9f63156ea1954dc2375c33a1c7e752c25c"
+  version = "v1.0.3"
+
+[[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
@@ -31,6 +37,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f448e4f25eecdc7bb9b4719480bca74f6009c25b4a2d24028d52075a47d857c2"
+  inputs-digest = "a15f45635cd3b269735285c3f633b86d0c7f80795ed7e0d615d61e38844c4a7d"
   solver-name = "gps-cdcl"
   solver-version = 1
