@@ -62,12 +62,7 @@ func main() {
 	app := cli.App("lazywatch", "Debounced directory watch")
 
 	app.Spec = "[-v] DIR CMD [ARG...]"
-
-	if version == "" {
-		app.Version("version", "development")
-	} else {
-		app.Version("version", version)
-	}
+	app.Version("version", version)
 
 	var (
 		dir     = app.StringArg("DIR", "", "directory to watch")
