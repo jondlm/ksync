@@ -19,14 +19,15 @@ var log *logrus.Logger
 func main() {
 	app := cli.App("lazywatch", "Debounced directory watch")
 
-	app.Spec = "[-v] DIR -- CMD [ARG...]"
+	app.Spec = "[-v] [-s] DIR -- CMD [ARG...]"
 	app.Version("version", version)
 
 	var (
-		dir     = app.StringArg("DIR", "", "directory to watch")
-		cmd     = app.StringArg("CMD", "", "command to run")
-		args    = app.StringsArg("ARG", []string{}, "argument to the command")
-		verbose = app.BoolOpt("v verbose", false, "verbose logging")
+		dir           = app.StringArg("DIR", "", "directory to watch")
+		cmd           = app.StringArg("CMD", "", "command to run")
+		args          = app.StringsArg("ARG", []string{}, "argument to the command")
+		verbose       = app.BoolOpt("v verbose", false, "verbose logging")
+		debounceDelay = app.IntOpt("s seconds", 5, "number of seconds to debounce the incoming file system events")
 	)
 
 	app.Before = func() {
@@ -51,7 +52,7 @@ func main() {
 		util.Watch(*dir, watcher, log)
 
 		running := false
-		update := util.Debounce(time.Second, func() {
+		update := util.Debounce(time.Second*time.Duration(*debounceDelay), func() {
 			if running {
 				return
 			}
